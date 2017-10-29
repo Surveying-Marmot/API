@@ -99,3 +99,10 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Ignore configuration
+config.py
+
+# Ignore db related
+db_repository/
+*.db
