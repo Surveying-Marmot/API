@@ -1,6 +1,6 @@
 from app import app, db, auth, api
 from flask_restful import Resource, reqparse, fields, marshal
-from app.models import Guides, Users
+from app.models import Guide, User
 from flask import g
 
 guide_fields = {
@@ -25,7 +25,7 @@ class GuideListAPI(Resource):
     def post(self):
         args = self.reqparse.parse_args()
 
-        guide = Guides(title=args['title'], owner=g.user)
+        guide = Guide(title=args['title'], owner=g.user)
         db.session.add(guide)
         db.session.commit()
 

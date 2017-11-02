@@ -1,45 +1,94 @@
-from app import db, auth, app
+"""
+    This module deals with the definition of all the database models needed for the application
+"""
+
+from app import db, app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous  import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-from flask import g
 
-class Users(db.Model):
+class User(db.Model):
+    """ Represents a user of the service """
     __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(32), index = True)
-    password_hash = db.Column(db.String(128))
-    guides = db.relationship('Guides', backref='owner', lazy='dynamic')
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(db.String(32), index=True)
+    password = db.Column(db.String(128))
+
+    guides = db.relationship('Guide', backref='owner', lazy='dynamic')
 
     def __repr__(self):
         return 'User: %r' % (self.username)
 
     def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
+        """ Encrypts the given password before saving it in the entry """
+        self.password = pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        return pwd_context.verify(password, self.password_hash)
+        """ Validate the given password against the DB one """
+        return pwd_context.verify(password, self.password)
 
-    def generate_auth_token(self, expiration = 600):
-        s = Serializer(app.config['API_SECRET_KEY'], expires_in = expiration)
-        return s.dumps({ 'id': self.id })
+    def generate_auth_token(self):
+        """ Generate a JWT token for this account """
+        token = Serializer(
+            app.config['API_SECRET_KEY'],
+            expires_in=app.config['JWT_TOKEN_EXPIRATION']
+        )
+        return token.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(app.config['API_SECRET_KEY'])
+        """ Check that the token received is still valid """
+        gen_token = Serializer(app.config['API_SECRET_KEY'])
         try:
-            data = s.loads(token)
+            data = gen_token.loads(token)
         except SignatureExpired:
             return None # valid token, but expired
         except BadSignature:
             return None # invalid token
-        user = Users.query.get(data['id'])
+        user = User.query.get(data['id'])
         return user
 
-class Guides(db.Model):
+
+""" Link for many-to-many relationship between photos and guides """
+photo_guide = db.Table(
+    'photo_guide',
+    db.Column('guide_id', db.Integer, db.ForeignKey('guides.id')),
+    db.Column('photo_id', db.Integer, db.ForeignKey('photos.id'))
+)
+
+
+class Guide(db.Model):
+    """ Represents a travel guide """
     __tablename__ = 'guides'
-    id = db.Column(db.Integer, primary_key = True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    id = db.Column(db.Integer, primary_key=True)
+
     title = db.Column(db.String(256))
+
+    creation = db.Column(db.DateTime, default=db.func.now())
+    last_edited = db.Column(db.DateTime, default=db.func.now())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    photos = db.relationship('Photo', backref='guides', lazy='dynamic', secondary=photo_guide)
 
     def __repr__(self):
         return 'Guide: %r' % (self.title)
+
+
+class Photo(db.Model):
+    """
+        Represent a photo stored in an external service (flickr/500px)
+        Photo are linked in a many to many relationship to the guides
+    """
+    __tablename__ = 'photos'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    origin = db.Column(db.Enum('Flickr', '500px'))
+
+    flickr_id = db.Column(db.Integer)
+    flickr_secret = db.Column(db.Integer)
+
+    def __repr__(self):
+        return 'Photo: %r' % (self.id)
