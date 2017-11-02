@@ -88,7 +88,8 @@ class Photo(db.Model):
     origin = db.Column(db.Enum('Flickr', '500px'))
 
     flickr_id = db.Column(db.String(16))
-    flickr_secret = db.Column(db.String(16))
+
+    url = db.Column(db.Text())
 
     def __repr__(self):
         return 'Photo: %r' % (self.id)

@@ -6,7 +6,7 @@ from flask import g
 image_fields = {
     'origin': fields.String,
     'flickr_id': fields.String,
-    'flickr_secret': fields.String
+    'url': fields.String
 }
 
 guide_fields = {
@@ -28,8 +28,6 @@ class GuideListAPI(Resource):
     def get(self):
         """ Get all the guides of from the current user """
         guides = g.user.guides.all()
-
-        print(guides[0].photos)
 
         return marshal(guides, guide_fields)
 

@@ -67,8 +67,6 @@ class PhotoSelect_API(Resource):
             raise ValueError("Origin must be Flickr")
         if image['id'] == None:
             raise ValueError("ID must be specified")
-        if image['secret'] == None:
-            raise ValueError("secret must be specified")
 
         return image
 
@@ -94,11 +92,25 @@ class PhotoSelect_API(Resource):
 
         guide = Guide.query.get(args['guide'])
 
-        photo = Photo(
-            origin='Flickr',
-            flickr_id=args['image']['id'],
-            flickr_secret=args['image']['secret']
-        )
+        photo = Photo.query.filter_by(
+            flickr_id=args['image']['id']
+        ).first()
+
+        if photo == None:
+            photo_data = FLICKR.photos.getInfo(
+                photo_id=args['image']['id']
+            )
+            print('herex')
+            print(photo_data)
+
+            photo = Photo(
+                origin='Flickr',
+                flickr_id=args['image']['id'],
+                url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg'
+            )
+        else:
+            if photo in guide.photos:
+                return "already present"
 
         guide.photos.append(photo)
         db.session.commit()
@@ -126,8 +138,7 @@ class PhotoSelect_API(Resource):
         args = parser.parse_args()
 
         photo = Photo.query.filter_by(
-            flickr_id=args['image']['id'],
-            flickr_secret=args['image']['secret']
+            flickr_id=args['image']['id']
         ).first()
 
         if not photo == None:
