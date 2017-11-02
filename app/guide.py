@@ -3,8 +3,16 @@ from flask_restful import Resource, reqparse, fields, marshal
 from app.models import Guide, User
 from flask import g
 
+image_fields = {
+    'origin': fields.String,
+    'flickr_id': fields.String,
+    'flickr_secret': fields.String
+}
+
 guide_fields = {
-    'title': fields.String
+    'id': fields.Integer,
+    'title': fields.String,
+    'photos': fields.List(fields.Nested(image_fields))
 }
 
 class GuideListAPI(Resource):
@@ -20,6 +28,9 @@ class GuideListAPI(Resource):
     def get(self):
         """ Get all the guides of from the current user """
         guides = g.user.guides.all()
+
+        print(guides[0].photos)
+
         return marshal(guides, guide_fields)
 
     def post(self):
