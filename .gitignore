@@ -106,3 +106,6 @@ config.py
 # Ignore db related
 db_repository/
 *.db
+
+# Ignore project
+.vscode/
