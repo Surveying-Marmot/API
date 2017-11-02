@@ -6,10 +6,6 @@ from app.models import *
 
 class TestCase(unittest.TestCase):
     def setUp(self):
-        app.config['TESTING']=True
-        app.config['WTF_CSRF_ENABLED']=False
-        DIR = os.path.abspath(os.path.dirname(__file__))
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DIR, 'test.db')
         self.app = app.test_client()
         db.create_all()
 
