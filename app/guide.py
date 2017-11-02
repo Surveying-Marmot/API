@@ -6,7 +6,9 @@ from flask import g
 image_fields = {
     'origin': fields.String,
     'flickr_id': fields.String,
-    'url': fields.String
+    'url': fields.String,
+    'latitude': fields.String,
+    'longitude': fields.String
 }
 
 guide_fields = {

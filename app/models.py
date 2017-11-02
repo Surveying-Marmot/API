@@ -91,5 +91,8 @@ class Photo(db.Model):
 
     url = db.Column(db.Text())
 
+    latitude = db.Column(db.String(8))
+    longitude = db.Column(db.String(8))
+
     def __repr__(self):
         return 'Photo: %r' % (self.id)

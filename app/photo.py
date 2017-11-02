@@ -10,9 +10,6 @@ FLICKR = flickrapi.FlickrAPI(
     format='parsed-json'
 )
 
-# class Image():
-
-
 class PhotoSearch_API(Resource):
     decorators = [auth.login_required]
 
@@ -103,10 +100,20 @@ class PhotoSelect_API(Resource):
             print('herex')
             print(photo_data)
 
+            latitude = ""
+            longitude = ""
+
+            # Check that the image is tagged with geoloc
+            if 'location' in photo_data['photo']:
+                latitude = photo_data['photo']['location']['latitude']
+                longitude = photo_data['photo']['location']['longitude']
+
             photo = Photo(
                 origin='Flickr',
                 flickr_id=args['image']['id'],
-                url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg'
+                url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg',
+                latitude = latitude,
+                longitude = longitude
             )
         else:
             if photo in guide.photos:
