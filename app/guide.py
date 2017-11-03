@@ -41,7 +41,26 @@ class GuideListAPI(Resource):
         db.session.commit()
 
 
+class GuideAPI(Resource):
+    decorators = [auth.login_required]
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('id', type=int, required=True,
+                                   help='No guide id provided',
+                                   location='json')
+        super(GuideAPI, self).__init__()
+
+    def get(self):
+        args = self.reqparse.parse_args()
+        guide = Guide.query.get(args['id']).first()
+
+        return marshal(guide, guide_fields)
+
 api.add_resource(GuideListAPI, app.config['BASE_URL']+'/guides', endpoint='guides')
+
+
+api.add_resource(GuideAPI, app.config['BASE_URL']+'/guide', endpoint='guide')
 
 # class GuideAPI(Resource):
 #     @auth.login_required
