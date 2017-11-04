@@ -47,13 +47,12 @@ class GuideAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('id', type=int, required=True,
-                                   help='No guide id provided',
-                                   location='json')
+                                   help='No guide id provided')
         super(GuideAPI, self).__init__()
 
     def get(self):
         args = self.reqparse.parse_args()
-        guide = Guide.query.get(args['id']).first()
+        guide = Guide.query.get(args['id'])
 
         return marshal(guide, guide_fields)
 
