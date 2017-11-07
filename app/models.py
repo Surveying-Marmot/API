@@ -14,6 +14,7 @@ class User(db.Model):
 
     username = db.Column(db.String(32), index=True)
     password = db.Column(db.String(128))
+    fullname = db.Column(db.Text)
 
     guides = db.relationship('Guide', backref='owner', lazy='dynamic')
 

@@ -1,5 +1,6 @@
-from app import app, db, auth
+from app import app, db, auth, api
 from flask import Flask, request, url_for, jsonify, abort, g
+from flask_restful import Resource, reqparse, fields, marshal
 from app.models import User
 
 @app.route(app.config['BASE_URL']+"/users/create", methods=["POST"])
@@ -47,3 +48,52 @@ def verify_password(username_or_token, password):
             return False
     g.user = user
     return True
+
+
+user_fields = {
+    'id': fields.Integer,
+    'username': fields.String,
+    'fullname': fields.String
+}
+
+# API for the user
+class UserInfo_API(Resource):
+    """ API entrypoint to get info about a user """
+    decorators = [auth.login_required]
+
+    def get(self):
+        """ Get all the available info about himself """
+        return marshal(g.user, user_fields)
+
+    def put(self):
+        """ Modify the given data in the current user """
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('label', type=str, required=True,
+                                   help='No field label provided',
+                                   location='json')
+        parser.add_argument('data', type=str, required=True,
+                                   help='No new data provided',
+                                   location='json')
+
+        parser.add_argument('oldpass', type=str,
+                                   location='json')
+
+        args = parser.parse_args()
+
+        if args.label == "fullname":
+            g.user.fullname = args.data
+
+        if args.label == "password":
+            if g.user.verify_password(args.oldpass):
+                g.user.hash_password(args.data)
+
+        db.session.commit()
+
+        return "success"
+
+api.add_resource(
+    UserInfo_API,
+    app.config['BASE_URL']+'/user',
+    endpoint='user_info'
+)
