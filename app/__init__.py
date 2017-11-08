@@ -1,3 +1,4 @@
+import os
 import sys
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -7,9 +8,14 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
+IS_PROD = os.environ.get('IS_HEROKU', None)
+
 # Select the config file based on the scenario
 if not 'unittest' in sys.modules:
-    app.config.from_object('config')
+    if IS_PROD:
+        app.config.from_object('config_heroku')
+    else:
+        app.config.from_object('config')
 else:
     app.config.from_object('config_test')
 
