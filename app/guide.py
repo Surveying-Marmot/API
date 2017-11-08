@@ -14,7 +14,8 @@ image_fields = {
 guide_fields = {
     'id': fields.Integer,
     'title': fields.String,
-    'photos': fields.List(fields.Nested(image_fields))
+    'photos': fields.List(fields.Nested(image_fields)),
+    'creation': fields.DateTime
 }
 
 class GuideListAPI(Resource):
