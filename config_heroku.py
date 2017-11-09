@@ -7,9 +7,6 @@ import os
 DIR = os.path.abspath(os.path.dirname(__file__))
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DIR, 'test.db')
 
-TESTING = True
-WTF_CSRF_ENABLED = False
-
 BASE_URL = '/api/v1'
 
 API_SECRET_KEY = os.environ.get('API_SECRET_KEY', None)

@@ -1,6 +1,6 @@
-from app import app
-from db_toolkit import create_db
+import os
+from app import app, db
 
-create_db()
+db.create_all()
 
-app.run(debug=True)
+app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT')))

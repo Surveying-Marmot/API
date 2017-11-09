@@ -18,9 +18,10 @@ import os.path
 import imp
 from docopt import docopt
 from migrate.versioning import api
+import app
+from app import db
 from config import SQLALCHEMY_DATABASE_URI
 from config import SQLALCHEMY_MIGRATE_REPO
-from app import db
 
 def create_db():
     """ Create the databases needed """

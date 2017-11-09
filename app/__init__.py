@@ -13,6 +13,7 @@ IS_PROD = os.environ.get('IS_HEROKU', None)
 # Select the config file based on the scenario
 if not 'unittest' in sys.modules:
     if IS_PROD:
+        print("Running using Heroku configuration")
         app.config.from_object('config_heroku')
     else:
         app.config.from_object('config')
