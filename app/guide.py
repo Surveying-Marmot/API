@@ -40,6 +40,7 @@ class GuideListAPI(Resource):
         guide = Guide(title=args['title'], owner=g.user)
         db.session.add(guide)
         db.session.commit()
+        return marshal(guide, guide_fields)
 
 
 class GuideAPI(Resource):
