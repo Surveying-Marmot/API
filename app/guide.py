@@ -58,6 +58,13 @@ class GuideAPI(Resource):
 
         return marshal(guide, guide_fields)
 
+    def delete(self):
+        args = self.reqparse.parse_args()
+        guide = Guide.query.get(args['id'])
+
+        db.session.delete(guide)
+        db.session.commit()
+
 api.add_resource(GuideListAPI, app.config['BASE_URL']+'/guides', endpoint='guides')
 
 
