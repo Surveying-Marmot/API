@@ -5,6 +5,7 @@ Usage:
   db_toolkit.py migrate
   db_toolkit.py upgrade
   db_toolkit.py downgrade
+  db_toolkit.py drop
   db_toolkit.py (-h | --help)
   db_toolkit.py --version
 
@@ -59,6 +60,10 @@ def downgrade_db():
     v = api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     print('Current database version: ' + str(v))
 
+def delete_db():
+    """ Delete the whole database """
+    db.drop_all()
+
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0')
 
@@ -70,3 +75,5 @@ if __name__ == '__main__':
         upgrade_db()
     elif arguments['downgrade'] == True:
         downgrade_db()
+    elif arguments['drop'] == True:
+        delete_db()
