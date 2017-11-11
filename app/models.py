@@ -86,7 +86,7 @@ class Photo(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    origin = db.Column(db.Enum('Flickr', '500px'))
+    origin = db.Column(db.Enum('Flickr', '500px', name='service_origin'))
 
     flickr_id = db.Column(db.String(16))
 

@@ -5,7 +5,7 @@
 import os
 
 DIR = os.path.abspath(os.path.dirname(__file__))
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DIR, 'test.db')
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI', None)
 
 BASE_URL = '/api/v1'
 
