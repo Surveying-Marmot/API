@@ -15,7 +15,8 @@ guide_fields = {
     'id': fields.Integer,
     'title': fields.String,
     'photos': fields.List(fields.Nested(image_fields)),
-    'creation': fields.DateTime
+    'creation': fields.DateTime,
+    'visibility': fields.Boolean
 }
 
 class GuideListAPI(Resource):
@@ -42,6 +43,13 @@ class GuideListAPI(Resource):
         db.session.commit()
         return marshal(guide, guide_fields)
 
+class GuidePublicListAPI(Resource):
+    def get(self):
+        """ Get all the guides with public visibility """
+        guides = Guide.query.filter_by(visibility=1).all()
+        print(guides)
+
+        return marshal(guides, guide_fields)
 
 class GuideAPI(Resource):
     decorators = [auth.login_required]
@@ -65,8 +73,32 @@ class GuideAPI(Resource):
         db.session.delete(guide)
         db.session.commit()
 
+    def put(self):
+        """ Modify the given data in the guide """
+
+        parser = reqparse.RequestParser()
+        parser.add_argument('id', type=int, required=True,
+                                   help='No guide id provided')
+        parser.add_argument('label', type=str, required=True,
+                                   help='No field label provided',
+                                   location='json')
+        parser.add_argument('data', type=str, required=True,
+                                   help='No new data provided',
+                                   location='json')
+
+        args = parser.parse_args()
+        guide = Guide.query.get(args['id'])
+
+        if args['label'] == "visibility":
+            guide.visibility = args['data']
+
+        db.session.commit()
+
+        return "success"
+
 api.add_resource(GuideListAPI, app.config['BASE_URL']+'/guides', endpoint='guides')
 
+api.add_resource(GuidePublicListAPI, app.config['BASE_URL']+'/guides/public', endpoint='guidesPublic')
 
 api.add_resource(GuideAPI, app.config['BASE_URL']+'/guide', endpoint='guide')
 
