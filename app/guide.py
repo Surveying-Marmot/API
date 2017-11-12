@@ -51,9 +51,12 @@ class GuidePublicListAPI(Resource):
 
         return marshal(guides, guide_fields)
 
-class GuideAPI(Resource):
-    decorators = [auth.login_required]
+# Not so nice way of doing a login only inside check
+@auth.login_required
+def Gate() :
+    return True
 
+class GuideAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('id', type=int, required=True,
@@ -64,8 +67,17 @@ class GuideAPI(Resource):
         args = self.reqparse.parse_args()
         guide = Guide.query.get(args['id'])
 
-        return marshal(guide, guide_fields)
+        print(guide.visibility)
 
+        if guide.visibility == 1:
+            return marshal(guide, guide_fields)
+        else:
+            if Gate() == True:
+                return marshal(guide, guide_fields)
+            else:
+                return auth.auth_error_callback()
+
+    @auth.login_required
     def delete(self):
         args = self.reqparse.parse_args()
         guide = Guide.query.get(args['id'])
@@ -73,6 +85,7 @@ class GuideAPI(Resource):
         db.session.delete(guide)
         db.session.commit()
 
+    @auth.login_required
     def put(self):
         """ Modify the given data in the guide """
 
