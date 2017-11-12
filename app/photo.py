@@ -2,6 +2,7 @@ from app import app, db, auth, api
 from flask import Flask, request, url_for, jsonify, abort, g
 from flask_restful import Resource, reqparse, fields, marshal
 from app.models import Photo, Guide
+import datetime
 import flickrapi
 
 FLICKR = flickrapi.FlickrAPI(
@@ -88,6 +89,7 @@ class PhotoSelect_API(Resource):
         args = parser.parse_args()
 
         guide = Guide.query.get(args['guide'])
+        guide.last_edited = datetime.datetime.now()
 
         photo = Photo.query.filter_by(
             flickr_id=args['image']['id']
@@ -150,6 +152,7 @@ class PhotoSelect_API(Resource):
 
         if not photo == None:
             guide = Guide.query.get(args['guide'])
+            guide.last_edited = datetime.datetime.now()
             guide.photos.remove(photo)
             db.session.commit()
             return "success"

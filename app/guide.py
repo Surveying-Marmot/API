@@ -1,6 +1,7 @@
 from app import app, db, auth, api
 from flask_restful import Resource, reqparse, fields, marshal
 from app.models import Guide, User
+import datetime
 from flask import g
 
 image_fields = {
@@ -16,6 +17,7 @@ guide_fields = {
     'title': fields.String,
     'photos': fields.List(fields.Nested(image_fields)),
     'creation': fields.DateTime,
+    'last_edited': fields.DateTime,
     'visibility': fields.Boolean
 }
 
@@ -101,6 +103,8 @@ class GuideAPI(Resource):
 
         args = parser.parse_args()
         guide = Guide.query.get(args['id'])
+
+        guide.last_edited = datetime.datetime.now()
 
         if args['label'] == "visibility":
             guide.visibility = args['data']
