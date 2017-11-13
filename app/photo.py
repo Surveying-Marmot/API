@@ -120,7 +120,7 @@ class PhotoSelect_API(Resource):
                 if matching != []:
                     print(matching[0]['raw']['_content'])
                     matched = re.search( r'(\d{1,4}(?:\.0)?)(?:-(\d{1,4}(?:\.0)?))? ?mm', matching[0]['raw']['_content'], re.M|re.I)
-                    if len(matched.groups()) == 1:
+                    if matched.groups(2) != None:
                         lens_focal = matched.group(1)
                     else:
                         lens_focal = matched.group(1) + " " + matched.group(2)
