@@ -110,17 +110,17 @@ class PhotoSelect_API(Resource):
                 longitude = photo_data['photo']['location']['longitude']
 
             # Try to get the exif
-            photo_exif = FLICKR.photos.getExif(
-                photo_id=args['image']['id']
-            )
-
             lens_focal = ""
             try:
+                photo_exif = FLICKR.photos.getExif(
+                    photo_id=args['image']['id']
+                )
+
                 matching = [s for s in photo_exif['photo']['exif'] if "LensModel" in s['tag']]
                 if matching != []:
                     print(matching[0]['raw']['_content'])
                     matched = re.search( r'(\d{1,4})(?:-(\d{1,4}))?mm', matching[0]['raw']['_content'], re.M|re.I)
-                    if len(matched.groups()) == 2:
+                    if len(matched.groups()) == 1:
                         lens_focal = matched.group(1)
                     else:
                         lens_focal = matched.group(1) + " " + matched.group(2)
