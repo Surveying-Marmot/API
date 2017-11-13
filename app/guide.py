@@ -9,7 +9,8 @@ image_fields = {
     'flickr_id': fields.String,
     'url': fields.String,
     'latitude': fields.String,
-    'longitude': fields.String
+    'longitude': fields.String,
+    'lensFocal': fields.String
 }
 
 guide_fields = {

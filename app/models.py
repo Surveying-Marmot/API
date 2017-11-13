@@ -97,5 +97,7 @@ class Photo(db.Model):
     latitude = db.Column(db.String(16))
     longitude = db.Column(db.String(16))
 
+    lensFocal = db.Column(db.String(16))
+
     def __repr__(self):
         return 'Photo: %r' % (self.id)

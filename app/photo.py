@@ -4,6 +4,7 @@ from flask_restful import Resource, reqparse, fields, marshal
 from app.models import Photo, Guide
 import datetime
 import flickrapi
+import re
 
 FLICKR = flickrapi.FlickrAPI(
     app.config['FLICKR_API_KEY'],
@@ -99,8 +100,6 @@ class PhotoSelect_API(Resource):
             photo_data = FLICKR.photos.getInfo(
                 photo_id=args['image']['id']
             )
-            print('herex')
-            print(photo_data)
 
             latitude = ""
             longitude = ""
@@ -110,12 +109,31 @@ class PhotoSelect_API(Resource):
                 latitude = photo_data['photo']['location']['latitude']
                 longitude = photo_data['photo']['location']['longitude']
 
+            # Try to get the exif
+            photo_exif = FLICKR.photos.getExif(
+                photo_id=args['image']['id']
+            )
+
+            lens_focal = ""
+            try:
+                matching = [s for s in photo_exif['photo']['exif'] if "LensModel" in s['tag']]
+                if matching != []:
+                    print(matching[0]['raw']['_content'])
+                    matched = re.search( r'(\d{1,4})(?:-(\d{1,4}))?mm', matching[0]['raw']['_content'], re.M|re.I)
+                    if len(matched.groups()) == 2:
+                        lens_focal = matched.group(1)
+                    else:
+                        lens_focal = matched.group(1) + " " + matched.group(2)
+            except flickrapi.FlickrError:
+                pass
+
             photo = Photo(
                 origin='Flickr',
                 flickr_id=args['image']['id'],
                 url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg',
                 latitude = latitude,
-                longitude = longitude
+                longitude = longitude,
+                lensFocal = lens_focal
             )
         else:
             if photo in guide.photos:
