@@ -119,7 +119,7 @@ class PhotoSelect_API(Resource):
                 matching = [s for s in photo_exif['photo']['exif'] if "LensModel" in s['tag']]
                 if matching != []:
                     print(matching[0]['raw']['_content'])
-                    matched = re.search( r'(\d{1,4})(?:-(\d{1,4}))?mm', matching[0]['raw']['_content'], re.M|re.I)
+                    matched = re.search( r'(\d{1,4}(?:\.0)?)(?:-(\d{1,4}(?:\.0)?))? ?mm', matching[0]['raw']['_content'], re.M|re.I)
                     if len(matched.groups()) == 1:
                         lens_focal = matched.group(1)
                     else:
