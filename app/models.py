@@ -90,6 +90,9 @@ class Photo(db.Model):
 
     origin = db.Column(db.Enum('Flickr', '500px', name='service_origin'))
 
+    title = db.Column(db.Text())
+    author = db.Column(db.String(256))
+
     flickr_id = db.Column(db.String(16))
 
     url = db.Column(db.Text())

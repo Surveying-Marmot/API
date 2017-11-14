@@ -129,6 +129,10 @@ class PhotoSelect_API(Resource):
 
             photo = Photo(
                 origin='Flickr',
+
+                title=photo_data['photo']['title']['_content'],
+                author=photo_data['photo']['owner']['realname'],
+
                 flickr_id=args['image']['id'],
                 url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg',
                 latitude = latitude,
