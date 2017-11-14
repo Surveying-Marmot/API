@@ -101,10 +101,15 @@ class PhotoSelect_API(Resource):
                 photo_id=args['image']['id']
             )
 
-            latitude = ""
-            longitude = ""
+            # Get the photographer name
+            username = photo_data['photo']['owner']['username']
+            realname = photo_data['photo']['owner']['realname']
+
+            author = username if realname == "" else realname
 
             # Check that the image is tagged with geoloc
+            latitude = ""
+            longitude = ""
             if 'location' in photo_data['photo']:
                 latitude = photo_data['photo']['location']['latitude']
                 longitude = photo_data['photo']['location']['longitude']
@@ -131,7 +136,7 @@ class PhotoSelect_API(Resource):
                 origin='Flickr',
 
                 title=photo_data['photo']['title']['_content'],
-                author=photo_data['photo']['owner']['realname'],
+                author=author,
 
                 flickr_id=args['image']['id'],
                 url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg',
