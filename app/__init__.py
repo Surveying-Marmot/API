@@ -26,4 +26,4 @@ api = Api(app)
 
 CORS(app)
 
-from app import models, users, guide, photo
+from app import models, users, guide, photo, weather
