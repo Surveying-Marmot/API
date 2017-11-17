@@ -12,6 +12,17 @@ FLICKR = flickrapi.FlickrAPI(
     format='parsed-json'
 )
 
+image_fields = {
+    'origin': fields.String,
+    'title': fields.String,
+    'author': fields.String,
+    'flickr_id': fields.String,
+    'url': fields.String,
+    'latitude': fields.String,
+    'longitude': fields.String,
+    'lensFocal': fields.String
+}
+
 class PhotoSearch_API(Resource):
     decorators = [auth.login_required]
 
@@ -151,7 +162,7 @@ class PhotoSelect_API(Resource):
         guide.photos.append(photo)
         db.session.commit()
 
-        return "success"
+        return marshal(photo, image_fields)
 
     def delete(self):
         """ Remove an image from a guide """
