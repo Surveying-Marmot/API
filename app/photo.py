@@ -49,13 +49,17 @@ class PhotoSearch_API(Resource):
         )
 
         args = parser.parse_args()
+        page = 1
+        if args['page']:
+            page = args['page']
 
         try:
             images = FLICKR.photos.search(
                 text=args['keywords'],
-                per_page='50',
+                per_page='20',
                 sort="relevance",
                 content_type=1,
+                page=page,
                 # Also include GPS, date, and author info
                 extras="geo,date_taken,owner_name"
             )
