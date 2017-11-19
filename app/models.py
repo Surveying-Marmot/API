@@ -6,6 +6,21 @@ from app import db, app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous  import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
+
+class Lens(db.Model):
+    """ Represent a lens """
+    __tablename__ = 'lenses'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    display_name = db.Column(db.String(256))
+    focal_range = db.Column(db.String(64))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    def __repr__(self):
+        return 'Lens: %r' % (self.displayName)
+
 class User(db.Model):
     """ Represents a user of the service """
     __tablename__ = 'users'
@@ -17,6 +32,7 @@ class User(db.Model):
     fullname = db.Column(db.Text)
 
     guides = db.relationship('Guide', backref='owner', lazy='dynamic')
+    lenses = db.relationship('Lens', backref='owner', lazy='dynamic')
 
     def __repr__(self):
         return 'User: %r' % (self.username)
