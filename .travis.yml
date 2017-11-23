@@ -5,4 +5,4 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - python tests.py
+  - nose2 --with-coverage -v
