@@ -21,6 +21,14 @@ class Lens(db.Model):
     def __repr__(self):
         return 'Lens: %r' % (self.displayName)
 
+class BetaCode(db.Model):
+    """ Table containing the beta codes """
+    __tablename__ = 'betacodes'
+    id = db.Column(db.Integer, primary_key=True)
+
+    code = db.Column(db.String(16))
+
+
 class User(db.Model):
     """ Represents a user of the service """
     __tablename__ = 'users'
@@ -29,7 +37,9 @@ class User(db.Model):
 
     username = db.Column(db.String(32), index=True)
     password = db.Column(db.String(128))
-    fullname = db.Column(db.Text)
+    fullname = db.Column(db.String(256))
+
+    email = db.Column(db.String(256))
 
     guides = db.relationship('Guide', backref='owner', lazy='dynamic')
     lenses = db.relationship('Lens', backref='owner', lazy='dynamic')
@@ -60,11 +70,19 @@ class User(db.Model):
         try:
             data = gen_token.loads(token)
         except SignatureExpired:
-            return None # valid token, but expired
+            raise ExpiredToken() # valid token, but expired
         except BadSignature:
-            return None # invalid token
+            raise BadSignatureToken() # invalid token
         user = User.query.get(data['id'])
         return user
+
+class ExpiredToken(Exception):
+    """ Exception raised when jwt token is expired """
+    pass
+
+class BadSignatureToken(Exception):
+    """ Exception raised when jwt token is invalid """
+    pass
 
 
 """ Link for many-to-many relationship between photos and guides """
