@@ -35,7 +35,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    username = db.Column(db.String(32), index=True)
+    username = db.Column(db.String(64), index=True)
     password = db.Column(db.String(128))
     fullname = db.Column(db.String(256))
 
@@ -66,6 +66,10 @@ class User(db.Model):
     @staticmethod
     def verify_auth_token(token):
         """ Check that the token received is still valid """
+        # In case the token so wrong that it's None
+        if not token:
+            raise BadSignatureToken
+
         gen_token = Serializer(app.config['API_SECRET_KEY'])
         try:
             data = gen_token.loads(token)

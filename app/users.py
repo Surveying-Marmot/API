@@ -14,7 +14,7 @@ class UserAuthentication_API(Resource):
     def get(self):
         """ Check that a JWT token is still valid """
         # The error case is dealt with by the login_required decorator
-        return 200
+        return {},200
 
     def post(self):
         """ Create and return a JWT token if user authenticate """
@@ -81,14 +81,14 @@ class UserAdministration_API(Resource):
 
         db.session.commit()
 
-        return 201
+        return {},201
 
     @auth.login_required
     def delete(self):
         """ Delete a user """
         db.session.delete(g.user)
         db.session.commit()
-        return 200
+        return {},200
 
 api.add_resource(
     UserAdministration_API,
@@ -114,17 +114,6 @@ class UserInfo_API(Resource):
         """ Get all the available info about himself """
         return marshal(g.user, user_fields), 200
 
-    @staticmethod
-    def password_data_parser(password):
-        """ Custom parser for password data """
-        # Note that this should also catch empty string
-        if not password['new']:
-            raise ValueError("New password is mandatory")
-        if not password['old']:
-            raise ValueError("Old password is mandatory")
-
-        return password
-
     def patch(self):
         """ Modify the given data in the current user """
         # Create the request parser
@@ -132,34 +121,47 @@ class UserInfo_API(Resource):
         parser.add_argument(
             'fullname',
             type=str,
-            required=False
+            required=False,
+            location='json'
         )
         parser.add_argument(
             'password',
-            type=self.password_data_parser,
-            required=False
+            type=dict,
+            required=False,
+            location='json'
         )
         parser.add_argument(
             'email',
             type=str,
-            required=False
+            required=False,
+            location='json'
         )
         args = parser.parse_args()
 
         # Make the changes for the fullname
-        if 'fullname' in args:
-            g.user.fullname = args.fullname
+        if not args.fullname is None:
+            g.user.fullname = args.fullname.strip()
 
         # Make the changes for the password
-        if 'password' in args:
+        if args.password:
+            # Parse the password field
+            pass_parser = reqparse.RequestParser()
+            pass_parser.add_argument('new', type=str, location=('password',),
+            required=True)
+            pass_parser.add_argument('old', type=str, location=('password',), required=True)
+            pass_args = pass_parser.parse_args(req=args)
+
             # First check the old password
-            if not g.user.verify_password(args.password.old):
+            if not g.user.verify_password(pass_args.old):
                 return {'error': 'Old password invalid'}, 400
 
-            g.user.hash_password(args.password.new)
+            g.user.hash_password(pass_args.new)
 
         # Make the changes for the email
-        if 'email' in args:
+        if not args.email is None:
+            # Check if empty
+            if not args.email.strip():
+                return {'error': 'Mandatory fields cannot be empty'}, 400
             # Check the format
             if not re.match(r"[^@]+@[^@]+\.[^@]+", args.email):
                 return {'error': 'Email format is invalid'}, 400
@@ -210,7 +212,7 @@ def verify_password(username_or_token, password):
         user = User.verify_auth_token(username_or_token)
     except (ExpiredToken, BadSignatureToken):
         # try to authenticate with username/password
-        user = User.query.filter_by(username = username_or_token).first()
+        user = User.query.filter_by(username=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user

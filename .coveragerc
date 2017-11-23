@@ -1,0 +1,10 @@
+# .coveragerc
+[run]
+branch = True
+[report]
+show_missing = True
+omit =
+    .vscode/*
+    */tests/*
+    db_repository/*
+    config*.py
