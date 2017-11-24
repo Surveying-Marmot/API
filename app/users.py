@@ -4,6 +4,8 @@ from flask_restful import Resource, reqparse, fields, marshal
 from app.models import User, BetaCode, Lens, ExpiredToken, BadSignatureToken
 import re
 
+from app.fields.user import *
+
 # User authentication
 # https://photoscout.github.io/API-Documentation/#user-user-authentication
 
@@ -99,20 +101,13 @@ api.add_resource(
 # User information
 # https://photoscout.github.io/API-Documentation/#user-user-info
 
-user_fields = {
-    'id': fields.Integer,
-    'username': fields.String,
-    'fullname': fields.String,
-    'email': fields.String
-}
-
 class UserInfo_API(Resource):
     """ API entrypoint dealing with user information """
     decorators = [auth.login_required]
 
     def get(self):
         """ Get all the available info about himself """
-        return marshal(g.user, user_fields), 200
+        return marshal(g.user, USER_FIELDS), 200
 
     def patch(self):
         """ Modify the given data in the current user """
@@ -171,7 +166,7 @@ class UserInfo_API(Resource):
         # Finally if all went fine, commit and return
         db.session.commit()
 
-        return marshal(g.user, user_fields), 200
+        return marshal(g.user, USER_FIELDS), 200
 
 api.add_resource(
     UserInfo_API,
@@ -182,12 +177,6 @@ api.add_resource(
 # Other users information
 # https://photoscout.github.io/API-Documentation/#user-other-users-info
 
-user_short_fields = {
-    'id': fields.Integer,
-    'username': fields.String,
-    'fullname': fields.String
-}
-
 class OtherUserInfo_API(Resource):
     """ API entrypoint dealing with other users information """
 
@@ -197,7 +186,7 @@ class OtherUserInfo_API(Resource):
         if not user:
             return {'error': 'No user found'}, 404
 
-        return marshal(user, user_short_fields), 200
+        return marshal(user, USER_SHORT_FIELDS), 200
 
 api.add_resource(
     OtherUserInfo_API,
