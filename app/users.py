@@ -74,7 +74,7 @@ class UserAdministration_API(Resource):
             return {'error': 'Username already in use'}, 409
 
         # Create the new user
-        user = User(username=args['username'])
+        user = User(username=args['username'], email=args['email'])
         user.hash_password(args['password'])
         db.session.add(user)
 

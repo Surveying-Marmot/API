@@ -80,6 +80,9 @@ class Test_Integration_User_Creation(unittest.TestCase):
         # Double check that it is in DB
         user = User.query.filter_by(username='test_user_creation_valid').first()
         self.assertTrue(user)
+        self.assertEqual(user.username, data['username'])
+        self.assertEqual(user.email, data['email'])
+        self.assertTrue(user.verify_password('123456'))
 
     def test_user_creation_reused_username(self):
         """ Test multiple use of the same username """
