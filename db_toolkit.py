@@ -19,6 +19,7 @@ import os.path
 import imp
 from docopt import docopt
 from migrate.versioning import api
+from app.models import BetaCode
 import app
 from app import db
 from config import SQLALCHEMY_DATABASE_URI
@@ -32,6 +33,12 @@ def create_db():
         api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO)
     else:
         api.version_control(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO, api.version(SQLALCHEMY_MIGRATE_REPO))
+
+    # Get the first beta code
+    code = raw_input("Enter the first beta code:")
+    beta_code = BetaCode(code=code)
+    db.session.add(beta_code)
+    db.session.commit()
 
 def migrate_db():
     """ Migrate an existing database to a new format """

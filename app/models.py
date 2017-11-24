@@ -108,10 +108,11 @@ class Guide(db.Model):
     creation = db.Column(db.DateTime, default=db.func.now())
     last_edited = db.Column(db.DateTime, default=db.func.now())
 
-    visibility = db.Column(db.Integer, default=0)
+    visibility = db.Column(db.SmallInteger, default=0)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     photos = db.relationship('Photo', backref='guides', lazy='dynamic', secondary=photo_guide)
+    featured_image = db.Column(db.Text())
 
     def __repr__(self):
         return 'Guide: %r' % (self.title)
