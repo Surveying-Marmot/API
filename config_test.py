@@ -14,7 +14,7 @@ BASE_URL = '/api/v1'
 
 API_SECRET_KEY = 'testtesttesttesttesttesttesttest'
 
-JWT_TOKEN_EXPIRATION = 600
+JWT_TOKEN_EXPIRATION = 3
 
 FLICKR_API_KEY = ""
 FLICKR_API_SECRET = ""

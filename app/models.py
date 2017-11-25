@@ -21,15 +21,25 @@ class Lens(db.Model):
     def __repr__(self):
         return 'Lens: %r' % (self.displayName)
 
+class BetaCode(db.Model):
+    """ Table containing the beta codes """
+    __tablename__ = 'betacodes'
+    id = db.Column(db.Integer, primary_key=True)
+
+    code = db.Column(db.String(16))
+
+
 class User(db.Model):
     """ Represents a user of the service """
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
 
-    username = db.Column(db.String(32), index=True)
+    username = db.Column(db.String(64), index=True)
     password = db.Column(db.String(128))
-    fullname = db.Column(db.Text)
+    fullname = db.Column(db.String(256))
+
+    email = db.Column(db.String(256))
 
     guides = db.relationship('Guide', backref='owner', lazy='dynamic')
     lenses = db.relationship('Lens', backref='owner', lazy='dynamic')
@@ -56,15 +66,27 @@ class User(db.Model):
     @staticmethod
     def verify_auth_token(token):
         """ Check that the token received is still valid """
+        # In case the token so wrong that it's None
+        if not token:
+            raise BadSignatureToken
+
         gen_token = Serializer(app.config['API_SECRET_KEY'])
         try:
             data = gen_token.loads(token)
         except SignatureExpired:
-            return None # valid token, but expired
+            raise ExpiredToken() # valid token, but expired
         except BadSignature:
-            return None # invalid token
+            raise BadSignatureToken() # invalid token
         user = User.query.get(data['id'])
         return user
+
+class ExpiredToken(Exception):
+    """ Exception raised when jwt token is expired """
+    pass
+
+class BadSignatureToken(Exception):
+    """ Exception raised when jwt token is invalid """
+    pass
 
 
 """ Link for many-to-many relationship between photos and guides """
@@ -73,7 +95,6 @@ photo_guide = db.Table(
     db.Column('guide_id', db.Integer, db.ForeignKey('guides.id')),
     db.Column('photo_id', db.Integer, db.ForeignKey('photos.id'))
 )
-
 
 class Guide(db.Model):
     """ Represents a travel guide """
@@ -86,13 +107,42 @@ class Guide(db.Model):
     creation = db.Column(db.DateTime, default=db.func.now())
     last_edited = db.Column(db.DateTime, default=db.func.now())
 
-    visibility = db.Column(db.Integer, default=0)
+    visibility = db.Column(db.SmallInteger, default=0)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     photos = db.relationship('Photo', backref='guides', lazy='dynamic', secondary=photo_guide)
 
+    number_photo = 0
+
     def __repr__(self):
         return 'Guide: %r' % (self.title)
+
+    @staticmethod
+    def getFeaturedLocation(guide):
+        """ Return the featured image """
+        photos = guide.photos.all()
+
+        for photo in photos:
+            if photo.latitude:
+                return {
+                    'latitude': photo.latitude,
+                    'longitude': photo.longitude
+                }
+
+        return None
+
+    @staticmethod
+    def getFeaturedImage(guide):
+        """ Return the featured image """
+        if guide.photos.first():
+            return guide.photos.first().url
+
+        return None
+
+    @staticmethod
+    def getNumberPhoto(guide):
+        """ Return the featured image """
+        return len(guide.photos.all())
 
 
 class Photo(db.Model):

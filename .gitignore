@@ -109,3 +109,5 @@ db_repository/
 
 # Ignore project
 .vscode/
+
+*_env/*
