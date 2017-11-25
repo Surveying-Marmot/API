@@ -96,7 +96,6 @@ photo_guide = db.Table(
     db.Column('photo_id', db.Integer, db.ForeignKey('photos.id'))
 )
 
-
 class Guide(db.Model):
     """ Represents a travel guide """
     __tablename__ = 'guides'
@@ -112,10 +111,38 @@ class Guide(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     photos = db.relationship('Photo', backref='guides', lazy='dynamic', secondary=photo_guide)
-    featured_image = db.Column(db.Text())
+
+    number_photo = 0
 
     def __repr__(self):
         return 'Guide: %r' % (self.title)
+
+    @staticmethod
+    def getFeaturedLocation(guide):
+        """ Return the featured image """
+        photos = guide.photos.all()
+
+        for photo in photos:
+            if photo.latitude:
+                return {
+                    'latitude': photo.latitude,
+                    'longitude': photo.longitude
+                }
+
+        return None
+
+    @staticmethod
+    def getFeaturedImage(guide):
+        """ Return the featured image """
+        if guide.photos.first():
+            return guide.photos.first().url
+
+        return None
+
+    @staticmethod
+    def getNumberPhoto(guide):
+        """ Return the featured image """
+        return len(guide.photos.all())
 
 
 class Photo(db.Model):

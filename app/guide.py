@@ -37,9 +37,6 @@ class GuidePublicListing_API(Resource):
 
         guides = Guide.query.filter_by(visibility=1).offset(per_page*page).limit(per_page).all()
 
-        for guide in guides:
-            guide = complete_guide(guide)
-
         return marshal(guides, GUIDE_SHORT_FIELDS)
 
 api.add_resource(
@@ -69,9 +66,6 @@ class GuideListing_API(Resource):
 
         guides = g.user.guides.offset(per_page*page).limit(per_page).all()
 
-        for guide in guides:
-            guide = complete_guide(guide)
-
         return marshal(guides, GUIDE_FIELDS)
 
 api.add_resource(
@@ -95,8 +89,7 @@ class Guide_API(Resource):
             'guide_id',
             type=int,
             required=True,
-            help='No guide id was provided',
-            location='json'
+            help='No guide id was provided'
         )
         args = parser.parse_args()
 
@@ -104,8 +97,6 @@ class Guide_API(Resource):
 
         if not guide:
             return {'error': 'Guide not found'}, 404
-
-        guide = complete_guide(guide)
 
         return marshal(guide, GUIDE_FIELDS), 200
 
@@ -125,8 +116,6 @@ class Guide_API(Resource):
         guide = Guide(title=args.title, owner=g.user)
         db.session.add(guide)
         db.session.commit()
-
-        guide = complete_guide(guide)
 
         return marshal(guide, GUIDE_FIELDS), 200
 
@@ -150,13 +139,15 @@ class Guide_API(Resource):
         args = parser.parse_args()
 
         info_parser = reqparse.RequestParser()
-        info_parser.add_argument('title', type=str, location='json')
-        info_parser.add_argument('featured_photo', type=int, location='json')
-        info_parser.add_argument('visibility', type=bool, location='json')
-        info_parser.add_argument('location', type=dict, location='json')
+        info_parser.add_argument('title', type=str, location=('guide_info',))
+        info_parser.add_argument('featured_photo', type=int, location=('guide_info',))
+        info_parser.add_argument('visibility', type=bool, location=('guide_info',))
+        info_parser.add_argument('location', type=dict, location=('guide_info',))
         info_args = info_parser.parse_args(req=args)
 
         guide = Guide.query.get(args.guide_id)
+
+        print(info_args)
 
         if not guide:
             return {'error': 'Guide not found'}, 404
@@ -182,8 +173,6 @@ class Guide_API(Resource):
             guide.visibility = info_args.visibility
 
         db.session.commit()
-
-        guide = complete_guide(guide)
 
         return marshal(guide, GUIDE_FIELDS), 200
 
@@ -226,7 +215,7 @@ class Guide_Photo_API(Resource):
         """ Get a list of all photos in a guide """
         # Create the request parser
         parser = reqparse.RequestParser()
-        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided', location='json')
+        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided', location='args')
         parser.add_argument('page', type=int, location='args')
         parser.add_argument('per_page', type=int, location='args')
         args = parser.parse_args()
@@ -248,8 +237,8 @@ class Guide_Photo_API(Resource):
         """ Remove a photo from a guide """
         # Create the request parser
         parser = reqparse.RequestParser()
-        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided', location='json')
-        parser.add_argument('photo_id', type=int, required=True, help='No photo id was provided', location='json')
+        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided')
+        parser.add_argument('photo_id', type=int, required=True, help='No photo id was provided')
         args = parser.parse_args()
 
         guide = Guide.query.get(args.guide_id)
@@ -257,9 +246,9 @@ class Guide_Photo_API(Resource):
         if not guide:
             return {'error': 'Guide not found'}, 404
 
-        photo = guide.photos.query.get(args.photo_id)
+        photo = Photo.query.get(args.photo_id)
 
-        if not photo:
+        if not photo in guide.photos:
             return {'error': 'Photo not in guide'}, 404
 
         guide.photos.remove(photo)
@@ -275,8 +264,8 @@ class Guide_Photo_API(Resource):
         args = parser.parse_args()
 
         info_parser = reqparse.RequestParser()
-        info_parser.add_argument('origin', type=str, required=True, location='json')
-        info_parser.add_argument('id', type=str, required=True, location='json')
+        info_parser.add_argument('origin', type=str, required=True, location=('image',))
+        info_parser.add_argument('id', type=str, required=True, location=('image',))
         info_args = info_parser.parse_args(req=args)
 
         guide = Guide.query.get(args.guide_id)
@@ -350,18 +339,3 @@ api.add_resource(
     app.config['BASE_URL']+'/guide/photo',
     endpoint='guide_photo'
 )
-
-# Add the missing/defaults fields to a guide
-DEFAULT_FEATURED_PHOTO = 'https://avatars0.githubusercontent.com/u/33183345?s=200&v=4'
-def complete_guide(guide):
-    # Add the default featured image
-    if not guide['featured_image']:
-        guide['featured_image'] = DEFAULT_FEATURED_PHOTO
-
-    # Set the owner field to the username
-    guide['owner'] = guide.owner.username
-
-    # Set the number of photo
-    guide['number_photo'] = len(guide.photos)
-
-    return guide

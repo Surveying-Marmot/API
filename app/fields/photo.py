@@ -12,6 +12,6 @@ PHOTO_FIELDS = {
     'flickr_id': fields.String,
     'author': fields.String,
     'url': fields.String,
-    'location': fields.Nested(LOCATION_FIELDS),
+    'location': fields.Nested(LOCATION_FIELDS, attribute=lambda x: {'latitude': x.latitude, 'longitude': x.longitude}),
     'lensFocal': fields.String
 }
