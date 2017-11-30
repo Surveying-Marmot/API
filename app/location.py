@@ -3,7 +3,6 @@ from flask import Flask, request, url_for, jsonify, abort, g
 from flask_restful import Resource, reqparse, fields, marshal
 from app.models import Photo, Guide
 import requests
-import googlemaps
 from app.fields.places import *
 
 class Google_Location():
@@ -56,8 +55,6 @@ class Location_API(Resource):
                 res_full = Google_Location(res)
                 place_list.append(res_full)
 
-            # gmaps = googlemaps.Client(key=app.config['GOOGLE_KEY'])
-            # near_result = gmaps.places(query="", type="point_of_interest", location=location, radius="1000")
             return marshal(place_list, PLACE_FIELDS), 200
 
         # No location available for this guide
