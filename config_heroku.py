@@ -16,3 +16,4 @@ JWT_TOKEN_EXPIRATION = 600
 FLICKR_API_KEY = os.environ.get('FLICKR_API_KEY', None)
 FLICKR_API_SECRET = os.environ.get('FLICKR_API_SECRET', None)
 OPENWEATHERMAP_KEY =  os.environ.get('OPENWEATHERMAP_KEY', None)
+GOOGLE_KEY = os.environ.get('GOOGLE_KEY', None)
