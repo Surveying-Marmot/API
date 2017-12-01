@@ -36,7 +36,7 @@ class PhotoSearch_API(Resource):
         # List of keywords
         parser.add_argument(
             'keywords',
-            type=str,
+            type=unicode,
             required=True,
             help="Missing list of keywords"
         )

@@ -45,7 +45,7 @@ class Location_API(Resource):
         print(location)
 
         if location:
-            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + location['latitude']+"," + location['longitude'] + "&radius=1000&keyword=point of interest&key="+app.config['GOOGLE_KEY']
+            url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + str(location['latitude'])+"," + str(location['longitude']) + "&radius=2000&keyword=point of interest&key="+app.config['GOOGLE_KEY']
 
             response = requests.get(url)
 

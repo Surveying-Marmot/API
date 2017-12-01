@@ -5,7 +5,7 @@
 from app import db, app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous  import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-
+from math import cos, sin, atan2, sqrt, radians, degrees
 
 class Lens(db.Model):
     """ Represent a lens """
@@ -27,6 +27,9 @@ class BetaCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     code = db.Column(db.String(16))
+
+    def __repr__(self):
+        return 'Code: %r' % (self.code)
 
 
 class User(db.Model):
@@ -122,14 +125,44 @@ class Guide(db.Model):
         """ Return the featured image """
         photos = guide.photos.all()
 
+        x = 0
+        y = 0
+        z = 0
+
+        size = 0
+
         for photo in photos:
             if photo.latitude:
-                return {
-                    'latitude': photo.latitude,
-                    'longitude': photo.longitude
-                }
+                lat = radians(float(photo.latitude))
+                lon = radians(float(photo.longitude))
+                x += cos(lat) * cos(lon)
+                y += cos(lat) * sin(lon)
+                z += sin(lat)
+                size+=1
 
-        return None
+        if size is 0:
+            return None
+
+        x = float(x / size)
+        y = float(y / size)
+        z = float(z / size)
+
+        return {
+            'latitude':  degrees(atan2(z, sqrt(x * x + y * y))),
+            'longitude': degrees(atan2(y, x))
+        }
+        # return atan2(z, sqrt(x * x + y * y)), atan2(y, x)
+
+
+
+        # for photo in photos:
+        #     if photo.latitude:
+        #         return {
+        #             'latitude': photo.latitude,
+        #             'longitude': photo.longitude
+        #         }
+
+        # return None
 
     @staticmethod
     def getFeaturedImage(guide):
