@@ -13,5 +13,7 @@ PHOTO_FIELDS = {
     'author': fields.String,
     'url': fields.String,
     'location': fields.Nested(LOCATION_FIELDS, attribute=lambda x: {'latitude': x.latitude, 'longitude': x.longitude}),
-    'lensFocal': fields.String
+    'lensFocal': fields.String,
+    'flash_fired': fields.Boolean,
+    'exposure': fields.String
 }

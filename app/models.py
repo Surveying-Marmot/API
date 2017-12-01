@@ -201,5 +201,8 @@ class Photo(db.Model):
 
     lensFocal = db.Column(db.String(16))
 
+    flash_fired = db.Column(db.SmallInteger, default=0)
+    exposure = db.Column(db.String(16))
+
     def __repr__(self):
         return 'Photo: %r' % (self.id)
