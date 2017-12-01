@@ -28,6 +28,9 @@ class BetaCode(db.Model):
 
     code = db.Column(db.String(16))
 
+    def __repr__(self):
+        return 'Code: %r' % (self.code)
+
 
 class User(db.Model):
     """ Represents a user of the service """
