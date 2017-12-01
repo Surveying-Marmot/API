@@ -297,19 +297,33 @@ class Guide_Photo_API(Resource):
 
             # Try to get the exif
             lens_focal = ""
+            flash_fired = 0
+            exposure = ""
             try:
                 photo_exif = FLICKR.photos.getExif(
                     photo_id=args['image']['id']
                 )
 
+                # Matching the lens model
                 matching = [s for s in photo_exif['photo']['exif'] if "LensModel" in s['tag']]
                 if matching != []:
-                    print(matching[0]['raw']['_content'])
                     matched = re.search( r'(\d{1,4}(?:\.0)?)(?:-(\d{1,4}(?:\.0)?))? ?mm', matching[0]['raw']['_content'], re.M|re.I)
                     if matched.group(2) == None:
                         lens_focal = matched.group(1)
                     else:
                         lens_focal = matched.group(1) + " " + matched.group(2)
+
+
+                # Matching the flash
+                matching = [s for s in photo_exif['photo']['exif'] if s['tag'] == "Flash"]
+                if matching != []:
+                    if "Fired" in matching[0]['raw']['_content']:
+                        flash_fired = 1
+
+                # Matching the exposure
+                matching = [s for s in photo_exif['photo']['exif'] if s['tag'] == "ExposureTime"]
+                if matching != []:
+                    exposure = matching[0]['raw']['_content']
             except flickrapi.FlickrError:
                 pass
 
@@ -323,7 +337,9 @@ class Guide_Photo_API(Resource):
                 url='https://farm'+ str(photo_data['photo']['farm']) +'.staticflickr.com/'+  str(photo_data['photo']['server']) +'/'+ str(photo_data['photo']['id']) +'_'+ str(photo_data['photo']['secret']) +'.jpg',
                 latitude = latitude,
                 longitude = longitude,
-                lensFocal = lens_focal
+                lensFocal = lens_focal,
+                flash_fired = flash_fired,
+                exposure = exposure
             )
         else:
             if photo in guide.photos:
