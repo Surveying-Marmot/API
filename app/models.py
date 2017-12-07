@@ -206,3 +206,7 @@ class Photo(db.Model):
 
     def __repr__(self):
         return 'Photo: %r' % (self.id)
+
+    def is_orphan(self):
+        orphan = db.session.query(photo_guide).filter_by(photo_id=self.id).all()
+        return len(orphan) is 0

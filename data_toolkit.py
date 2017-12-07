@@ -81,8 +81,7 @@ def remove_orphans():
 
     for photo in photos:
         # Query the table linking guides and photos, if in no guide then it's orphan
-        orphan = db.session.query(photo_guide).filter_by(photo_id=photo.id).all()
-        if len(orphan) is 0:
+        if photo.is_orphan():
             print(str(photo.id) + " is orphan")
             db.session.delete(photo)    # Exterminate the poor guy :(
 

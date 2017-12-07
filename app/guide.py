@@ -252,6 +252,11 @@ class Guide_Photo_API(Resource):
             return {'error': 'Photo not in guide'}, 404
 
         guide.photos.remove(photo)
+
+        # Let's not create orphans
+        if photo.is_orphan():
+            db.session.delete(photo)
+
         db.session.commit()
         return {},200
 
