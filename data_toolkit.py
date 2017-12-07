@@ -3,6 +3,7 @@
 Usage:
   data_toolkit.py flash
   data_toolkit.py exposure
+  data_toolkit.py orphan
   data_toolkit.py (-h | --help)
   data_toolkit.py --version
 
@@ -16,7 +17,7 @@ import os.path
 import imp
 from docopt import docopt
 from migrate.versioning import api
-from app.models import Photo
+from app.models import Photo, photo_guide
 import app
 from app import db
 from config import SQLALCHEMY_DATABASE_URI
@@ -74,6 +75,19 @@ def add_speed():
 
     db.session.commit()
 
+def remove_orphans():
+    """ Get the list of images that are not used in any guides but still there """
+    photos = Photo.query.all()
+
+    for photo in photos:
+        # Query the table linking guides and photos, if in no guide then it's orphan
+        orphan = db.session.query(photo_guide).filter_by(photo_id=photo.id).all()
+        if len(orphan) is 0:
+            print(str(photo.id) + " is orphan")
+            db.session.delete(photo)    # Exterminate the poor guy :(
+
+    db.session.commit()
+
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0')
@@ -82,3 +96,5 @@ if __name__ == '__main__':
         add_flash()
     if arguments['exposure'] == True:
         add_speed()
+    if arguments['orphan'] == True:
+        remove_orphans()
