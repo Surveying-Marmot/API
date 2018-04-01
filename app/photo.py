@@ -69,6 +69,67 @@ class PhotoSearch_API(Resource):
         except flickrapi.FlickrError:
             abort(400)
 
+class PhotoSearchNear_API(Resource):
+    decorators = [auth.login_required]
+
+    def __init__(self):
+        super(PhotoSearchNear_API, self).__init__()
+
+    def get(self):
+        """ Get a list of photos from the target api near a location """
+        parser = reqparse.RequestParser()
+
+        print("here")
+
+        # List of keywords
+        parser.add_argument(
+            'lat',
+            type=str,
+            required=True,
+            help="Missing lat"
+        )
+
+        parser.add_argument(
+            'lon',
+            type=str,
+            required=True,
+            help="Missing lat"
+        )
+        # Page to load from the target api
+        parser.add_argument(
+            'page',
+            type=int,
+            required=False,
+            help="Error in target page"
+        )
+
+        args = parser.parse_args()
+        page = 1
+        if args['page']:
+            page = args['page']
+
+        print("Here")
+        print(args['lat'])
+        print(args['lon'])
+
+        try:
+            images = FLICKR.photos.search(
+                lat=args['lat'],
+                lon=args['lon'],
+                per_page='25',
+                # radius='2',
+                sort="interestingness-desc",
+                content_type=1,
+                page=page,
+                # Also include GPS, date, and author info
+                extras="geo,date_taken,owner_name"
+            )
+
+            return jsonify(images)
+
+        except flickrapi.FlickrError:
+            abort(400)
+
 class PhotoSelect_API(Resource):
     decorators = [auth.login_required]
 
@@ -203,8 +264,14 @@ class PhotoSelect_API(Resource):
 
 
 api.add_resource(
+    PhotoSearchNear_API,
+    app.config['BASE_URL']+'/photo/search/near',
+    endpoint='photos_search_near'
+)
+
+api.add_resource(
     PhotoSearch_API,
-    app.config['BASE_URL']+'/photos/search',
+    app.config['BASE_URL']+'/photo/search',
     endpoint='photos_search'
 )
 

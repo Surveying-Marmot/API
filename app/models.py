@@ -2,10 +2,12 @@
     This module deals with the definition of all the database models needed for the application
 """
 
+from sqlalchemy.sql import func
 from app import db, app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous  import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 from math import cos, sin, atan2, sqrt, radians, degrees
+from datetime import datetime
 
 class Lens(db.Model):
     """ Represent a lens """
@@ -104,11 +106,12 @@ class Guide(db.Model):
     __tablename__ = 'guides'
 
     id = db.Column(db.Integer, primary_key=True)
+    short_name = db.Column(db.String(32), index=True)
 
     title = db.Column(db.String(256))
 
-    creation = db.Column(db.DateTime, default=db.func.now())
-    last_edited = db.Column(db.DateTime, default=db.func.now())
+    creation = db.Column(db.DateTime, server_default=db.func.now())
+    last_edited = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     visibility = db.Column(db.SmallInteger, default=0)
 
@@ -151,18 +154,6 @@ class Guide(db.Model):
             'latitude':  degrees(atan2(z, sqrt(x * x + y * y))),
             'longitude': degrees(atan2(y, x))
         }
-        # return atan2(z, sqrt(x * x + y * y)), atan2(y, x)
-
-
-
-        # for photo in photos:
-        #     if photo.latitude:
-        #         return {
-        #             'latitude': photo.latitude,
-        #             'longitude': photo.longitude
-        #         }
-
-        # return None
 
     @staticmethod
     def getFeaturedImage(guide):

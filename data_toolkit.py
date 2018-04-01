@@ -4,6 +4,7 @@ Usage:
   data_toolkit.py flash
   data_toolkit.py exposure
   data_toolkit.py orphan
+  data_toolkit.py short_name
   data_toolkit.py (-h | --help)
   data_toolkit.py --version
 
@@ -17,7 +18,7 @@ import os.path
 import imp
 from docopt import docopt
 from migrate.versioning import api
-from app.models import Photo, photo_guide
+from app.models import Photo, photo_guide, Guide
 import app
 from app import db
 from config import SQLALCHEMY_DATABASE_URI
@@ -87,6 +88,15 @@ def remove_orphans():
 
     db.session.commit()
 
+def add_short_name():
+    """ Makes sure every guide gets a shortname """
+    guides = Guide.query.all()
+
+    for guide in guides:
+        if not guide.short_name:
+            guide.short_name = guide.title[:32].replace(' ', '-').lower()
+
+    db.session.commit()
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='1.0')
@@ -97,3 +107,5 @@ if __name__ == '__main__':
         add_speed()
     if arguments['orphan'] == True:
         remove_orphans()
+    if arguments['short_name'] == True:
+        add_short_name()

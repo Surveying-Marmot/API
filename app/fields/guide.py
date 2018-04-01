@@ -17,6 +17,7 @@ GUIDE_SHORT_FIELDS = {
 
 GUIDE_FIELDS = {
     'id': fields.Integer,
+    'short_name': fields.String,
     'title': fields.String,
     'featured_image': fields.String(attribute=Guide.getFeaturedImage, default=DEFAULT_FEATURED_PHOTO),
     'creation': fields.DateTime,

@@ -62,7 +62,7 @@ class GuideListing_API(Resource):
 
         # Setting the defaults
         page = args.page if args.page else 0
-        per_page = args.per_page if args.per_page else 10
+        per_page = args.per_page if args.per_page else 20
 
         guides = g.user.guides.offset(per_page*page).limit(per_page).all()
 
@@ -87,13 +87,15 @@ class Guide_API(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument(
             'guide_id',
-            type=int,
+            # type=int,
+            type=str,
             required=True,
             help='No guide id was provided'
         )
         args = parser.parse_args()
 
-        guide = Guide.query.get(args.guide_id)
+        # guide = Guide.query.get(args.guide_id)
+        guide = Guide.query.filter_by(short_name=args.guide_id).first()
 
         if not guide:
             return {'error': 'Guide not found'}, 404
@@ -113,7 +115,7 @@ class Guide_API(Resource):
         )
         args = parser.parse_args()
 
-        guide = Guide(title=args.title, owner=g.user)
+        guide = Guide(title=args.title, short_name=args.title[:32].replace(' ', '-').lower(), owner=g.user)
         db.session.add(guide)
         db.session.commit()
 
@@ -215,19 +217,19 @@ class Guide_Photo_API(Resource):
         """ Get a list of all photos in a guide """
         # Create the request parser
         parser = reqparse.RequestParser()
-        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided', location='args')
+        parser.add_argument('guide_id', type=str, required=True, help='No guide id was provided', location='args')
         parser.add_argument('page', type=int, location='args')
         parser.add_argument('per_page', type=int, location='args')
         args = parser.parse_args()
 
-        guide = Guide.query.get(args.guide_id)
+        guide = Guide.query.filter_by(short_name=args.guide_id).first()
 
         if not guide:
             return {'error': 'Guide not found'}, 404
 
         # Setting the defaults
         page = args.page if args.page else 0
-        per_page = args.per_page if args.per_page else 20
+        per_page = args.per_page if args.per_page else 50
 
         photos = guide.photos.offset(per_page*page).limit(per_page).all()
 
@@ -237,11 +239,11 @@ class Guide_Photo_API(Resource):
         """ Remove a photo from a guide """
         # Create the request parser
         parser = reqparse.RequestParser()
-        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided')
+        parser.add_argument('guide_id', type=str, required=True, help='No guide id was provided')
         parser.add_argument('photo_id', type=int, required=True, help='No photo id was provided')
         args = parser.parse_args()
 
-        guide = Guide.query.get(args.guide_id)
+        guide = Guide.query.filter_by(short_name=args.guide_id).first()
 
         if not guide:
             return {'error': 'Guide not found'}, 404
@@ -264,7 +266,7 @@ class Guide_Photo_API(Resource):
         """ Add a photo to a guide """
         # Create the request parser
         parser = reqparse.RequestParser()
-        parser.add_argument('guide_id', type=int, required=True, help='No guide id was provided', location='json')
+        parser.add_argument('guide_id', type=str, required=True, help='No guide id was provided', location='json')
         parser.add_argument('image', type=dict, required=True, help='No photo info was provided', location='json')
         args = parser.parse_args()
 
@@ -273,7 +275,7 @@ class Guide_Photo_API(Resource):
         info_parser.add_argument('id', type=str, required=True, location=('image',))
         info_args = info_parser.parse_args(req=args)
 
-        guide = Guide.query.get(args.guide_id)
+        guide = Guide.query.filter_by(short_name=args.guide_id).first()
 
         if not guide:
             return {'error': 'Guide not found'}, 404
